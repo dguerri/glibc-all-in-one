@@ -1,21 +1,21 @@
 # glibc-all-in-one
 
-this repo helps you to download & debug & complie glibc easily.
+This repo helps you to download & debug & compile glibc easily.
 
-__feature__
+## Features
 
 - download glibc binary
 - download glibc debug file
 - extract custom glibc
-- download & complie glibc source code
+- download & compile glibc source code
 
+## Usage
 
-# usage
+### Download
 
-## download
-check supported packages. remember to run `update_list` at first.
+Check supported packages. Remember to run `update_list` at first.
 
-```
+```sh
 ➜  glibc-all-in-one ./update_list
 [+] Common list has been save to "list"
 [+] Old-release list has been save to "old_list"
@@ -47,11 +47,11 @@ check supported packages. remember to run `update_list` at first.
 ......
 ```
 
-download. 
+Download.
 
-__Note__: use `download` for packages in the `list`; use `download_old` for packages in the `old_list`.
+__Note__: use `download` for packages in the `list`; use `download -o` for packages in the `old_list`.
 
-```
+```sh
 ➜  glibc-all-in-one ./download 2.23-0ubuntu10_i386
 Getting 2.23-0ubuntu10_i386
   -> Location: https://mirror.tuna.tsinghua.edu.cn/ubuntu/pool/main/g/glibc/libc6_2.23-0ubuntu10_i386.deb
@@ -68,29 +68,29 @@ Getting 2.23-0ubuntu10_i386
 ld-2.23.so  libc-2.23.so   ......
 ```
 
-```
-➜  glibc-all-in-one ./download_old 2.24-3ubuntu2.2_amd64
+```sh
+➜  glibc-all-in-one ./download -o 2.24-3ubuntu2.2_amd64
 ......
 ```
 
-needed glibc not in my list ?
+Needed glibc not in my list?
 
-you can download the debs on your own, then use `extract`.
+You can download the debs on your own, then use `extract`.
 
 ```sh
 ./extract ~/libc6_2.26-0ubuntu2_i386.deb /tmp/test
 ./extract ~/libc6-dbg_2.26-0ubuntu2_i386.deb /tmp/test_dbg
 ```
 
-## compile
+### Build
 
 supported version: 2.19, 2.23-2.29
 
 supported arch: i686, amd64
 
-__note__: you may fail to build older version of glibc. ( not my problem ) . my friend says that ubuntu 16.04 is perfect to build all of them.
+__Note__: you may fail to build older version of glibc. (not my problem). My friend says that Ubuntu 16.04 is perfect to build all of them.
 
-__note__: change the `GLIBC_DIR` in the `build`, if you don't want to build them on `/glibc`.
+__Note__: change the `GLIBC_DIR` in the `build`, if you don't want to build them on `/glibc`.
 
 ```sh
 ./build 2.29 i686

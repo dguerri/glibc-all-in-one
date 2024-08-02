@@ -1,36 +1,30 @@
 #!/bin/bash
-cd "$(dirname "$0")"
-if [ ! -d "libs" ]; then
-    mkdir libs
-fi
 
-if [ ! -d "debs" ];  then
-    mkdir debs
-fi
+set -uo pipefail
 
-SOURCE="https://mirror.tuna.tsinghua.edu.cn/ubuntu/pool/main/g/glibc"
-# Use the source below if you feel slow, or change it on your own.
-# SOURCE="http://archive.ubuntu.com/ubuntu/pool/main/g/glibc/"
+NEW_SOURCE="http://archive.ubuntu.com/ubuntu/pool/main/g/glibc/"
+ALT_SOURCE="https://mirror.tuna.tsinghua.edu.cn/ubuntu/pool/main/g/glibc"
+OLD_SOURCE="http://old-releases.ubuntu.com/ubuntu/pool/main/g/glibc"
 
 LIBC_PREFIX="libc6_"
 LIBC_DBG_PREFIX="libc6-dbg_"
 
 die() {
-  echo >&2 $1
+  echo >&2 "$1"
   exit 1
 }
 
 usage() {
-  echo >&2 "Usage: $0 id"
+  echo >&2 "Usage: $0 [-o|--old-source] [-a|--alt-source] glibc-id"
   exit 2
 }
 
 download_single() {
-  local id=$1
-  local deb_name=$LIBC_PREFIX$id.deb
-  local dbg_name=$LIBC_DBG_PREFIX$id.deb
-  echo "Getting $id"
-  if [ -d "libs/$id" ]; then
+  local id="$1"
+  local deb_name="${LIBC_PREFIX}${id}.deb"
+  local dbg_name="${LIBC_DBG_PREFIX}${id}.deb"
+  echo "Getting ${id}"
+  if [ -d "libs/${id}" ]; then
     die "  --> Downloaded before. Remove it to download again."
   fi
 
@@ -38,26 +32,68 @@ download_single() {
   local url="$SOURCE/$deb_name"
   echo "  -> Location: $url"
   echo "  -> Downloading libc binary package"
-  wget "$url" 2>/dev/null -O debs/$deb_name || die "Failed to download package from $url"
+  wget "$url" -O "debs/${deb_name}" 2>/dev/null || die "Failed to download package from ${url}"
   echo "  -> Extracting libc binary package"
 
-  mkdir libs/$id
-  ./extract debs/$deb_name libs/$id
+  mkdir libs/"$id"
+  ./extract "debs/${deb_name}" "libs/${id}"
   echo "  -> Package saved to libs/$id"
 
   # download debug info package
-  local url="$SOURCE/$dbg_name"
-  echo "  -> Location: $url"
+  local url="${SOURCE}/${dbg_name}"
+  echo "  -> Location: ${url}"
   echo "  -> Downloading libc debug package"
-  wget "$url" 2>/dev/null -O debs/$dbg_name || die "Failed to download package from $url"
+  wget "$url" -O "debs/${dbg_name}" 2>/dev/null || die "Failed to download package from $url"
   echo "  -> Extracting libc debug package"
 
-  mkdir libs/$id/.debug
-  ./extract debs/$dbg_name libs/$id/.debug
-  echo "  -> Package saved to libs/$id/.debug"
+  mkdir libs/"$id"/.debug
+  ./extract "debs/${dbg_name}" "libs/${id}/.debug"
+  echo "  -> Package saved to libs/${id}/.debug"
 }
 
-if [[ $# != 1 ]]; then
+GLIBC_ID=""
+SOURCE="$NEW_SOURCE"
+
+while [[ $# -gt 0 ]]; do
+  case $1 in
+  -o | --old-source)
+    SOURCE="$OLD_SOURCE"
+    shift
+    shift
+    ;;
+  -a | --alt-source)
+    SOURCE="$ALT_SOURCE"
+    shift
+    shift
+    ;;
+  -*)
+    echo "Unknown option $1"
+    usage
+    ;;
+  *)
+    if [ -n "$GLIBC_ID" ]; then
+      echo "Too many positional parameters '$GLIBC_ID', '$1', ..."
+      usage
+    fi
+    GLIBC_ID="$1"
+    shift
+    ;;
+  esac
+done
+
+if [ -z "$GLIBC_ID" ]; then
+  echo "Missing glibc-id"
   usage
 fi
-download_single "$1"
+
+cd "$(dirname "$0")"
+
+if [ ! -d "libs" ]; then
+  mkdir libs
+fi
+
+if [ ! -d "debs" ]; then
+  mkdir debs
+fi
+
+download_single "$GLIBC_ID"
